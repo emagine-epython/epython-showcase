@@ -1,0 +1,22 @@
+version: 0.2
+
+env:
+    variables:
+        PYTHONPATH: .
+
+phases:
+    install:
+        runtime-versions:
+            python: 3.8
+    pre_build:
+        commands:
+            - python -m pip install --upgrade pip
+            - pip install -r requirements.txt
+    build:
+        commands:
+            - flake8
+            - pytest
+
+    post_build:
+        commands:
+            - echo Build completed on `date`

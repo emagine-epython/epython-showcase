@@ -1,0 +1,18 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: 'AWS::Serverless-2016-10-31'
+Description: An AWS Serverless Specification template describing your function.
+Resources:
+  slacknotification:
+    Type: 'AWS::Serverless::Function'
+    Properties:
+      Environment:
+        Variables:
+          ACCESS_TOKEN: 0102020078de4d790cc59c35d31e9ee94c623ef8a175c0e4ce565d9b7873551ed4bbaf276701cc7ad782830460ab8c30167babecc91d0000008f30818c06092a864886f70d010706a07f307d020100307806092a864886f70d010701301e060960864801650304012e3011040cf792a1c8fe7b65b0b1c25a0d020110804b0bf1de0e9e94ce33e922f235107efecbaf9f546b7981486f4850b86eebf37e0fe07aa1dc83902c6e757c26a14a2fb282492c3d7dbb684199ae1d56bef425a82230e3e75e7a181e76605c12
+          KMS_KEY_ID: d4c80f20-fbd6-48c2-b493-b53a2eb34afa
+      FunctionName: slack-notification
+      Description: ''
+      Handler: lambda_function.lambda_handler
+      MemorySize: 128
+      Role: 'arn:aws:iam::499030764380:role/slack'
+      Runtime: python3.8
+      Timeout: 3

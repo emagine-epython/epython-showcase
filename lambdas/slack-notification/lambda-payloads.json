@@ -1,0 +1,170 @@
+{
+    "slacknotification": {
+        "lambda": {
+            "Records": [
+                {
+                    "Sns": {
+                        "Message": {
+                            "account": "499030764380",
+                            "detailType": "CodeBuild Build State Change",
+                            "region": "eu-west-1",
+                            "source": "aws.codebuild",
+                            "time": "2020-10-06T22:33:49Z",
+                            "notificationRuleArn": "arn:aws:codestar-notifications:eu-west-1:499030764380:notificationrule/e36669c4053140593f63b195684511b9948d01e8",
+                            "detail": {
+                                "build-status": "SUCCEEDED",
+                                "project-name": "epython-codebuild",
+                                "build-id": "arn:aws:codebuild:eu-west-1:499030764380:build/epython-codebuild:eef1f725-95aa-4ea2-9ac3-652bbdf347af",
+                                "additional-information": {
+                                    "cache": {
+                                        "type": "NO_CACHE"
+                                    },
+                                    "build-number": 17,
+                                    "timeout-in-minutes": 60,
+                                    "build-complete": true,
+                                    "initiator": "tony.yum",
+                                    "build-start-time": "Oct 6, 2020 10:32:09 PM",
+                                    "source": {
+                                        "location": "https://git-codecommit.eu-west-1.amazonaws.com/v1/repos/emagine-epython",
+                                        "git-clone-depth": 1,
+                                        "type": "CODECOMMIT",
+                                        "git-submodules-config": {
+                                            "fetch-submodules": false
+                                        }
+                                    },
+                                    "source-version": "refs/heads/master",
+                                    "artifact": {
+                                        "location": ""
+                                    },
+                                    "environment": {
+                                        "image": "aws/codebuild/amazonlinux2-x86_64-standard:3.0",
+                                        "privileged-mode": false,
+                                        "image-pull-credentials-type": "CODEBUILD",
+                                        "compute-type": "BUILD_GENERAL1_SMALL",
+                                        "type": "LINUX_CONTAINER",
+                                        "environment-variables": []
+                                    },
+                                    "logs": {
+                                        "group-name": "epython",
+                                        "stream-name": "epython-codebuild/eef1f725-95aa-4ea2-9ac3-652bbdf347af",
+                                        "deep-link": "https://console.aws.amazon.com/cloudwatch/home?region=eu-west-1#logEvent:group=epython;stream=epython-codebuild/eef1f725-95aa-4ea2-9ac3-652bbdf347af"
+                                    },
+                                    "phases": [
+                                        {
+                                            "phase-context": [],
+                                            "start-time": "Oct 6, 2020 10:32:09 PM",
+                                            "end-time": "Oct 6, 2020 10:32:09 PM",
+                                            "duration-in-seconds": 0,
+                                            "phase-type": "SUBMITTED",
+                                            "phase-status": "SUCCEEDED"
+                                        },
+                                        {
+                                            "phase-context": [],
+                                            "start-time": "Oct 6, 2020 10:32:09 PM",
+                                            "end-time": "Oct 6, 2020 10:32:40 PM",
+                                            "duration-in-seconds": 31,
+                                            "phase-type": "QUEUED",
+                                            "phase-status": "SUCCEEDED"
+                                        },
+                                        {
+                                            "phase-context": [
+                                                ": "
+                                            ],
+                                            "start-time": "Oct 6, 2020 10:32:40 PM",
+                                            "end-time": "Oct 6, 2020 10:32:57 PM",
+                                            "duration-in-seconds": 16,
+                                            "phase-type": "PROVISIONING",
+                                            "phase-status": "SUCCEEDED"
+                                        },
+                                        {
+                                            "phase-context": [
+                                                ": "
+                                            ],
+                                            "start-time": "Oct 6, 2020 10:32:57 PM",
+                                            "end-time": "Oct 6, 2020 10:33:02 PM",
+                                            "duration-in-seconds": 4,
+                                            "phase-type": "DOWNLOAD_SOURCE",
+                                            "phase-status": "SUCCEEDED"
+                                        },
+                                        {
+                                            "phase-context": [
+                                                ": "
+                                            ],
+                                            "start-time": "Oct 6, 2020 10:33:02 PM",
+                                            "end-time": "Oct 6, 2020 10:33:02 PM",
+                                            "duration-in-seconds": 0,
+                                            "phase-type": "INSTALL",
+                                            "phase-status": "SUCCEEDED"
+                                        },
+                                        {
+                                            "phase-context": [
+                                                ": "
+                                            ],
+                                            "start-time": "Oct 6, 2020 10:33:02 PM",
+                                            "end-time": "Oct 6, 2020 10:33:43 PM",
+                                            "duration-in-seconds": 40,
+                                            "phase-type": "PRE_BUILD",
+                                            "phase-status": "SUCCEEDED"
+                                        },
+                                        {
+                                            "phase-context": [
+                                                ": "
+                                            ],
+                                            "start-time": "Oct 6, 2020 10:33:43 PM",
+                                            "end-time": "Oct 6, 2020 10:33:45 PM",
+                                            "duration-in-seconds": 2,
+                                            "phase-type": "BUILD",
+                                            "phase-status": "SUCCEEDED"
+                                        },
+                                        {
+                                            "phase-context": [
+                                                ": "
+                                            ],
+                                            "start-time": "Oct 6, 2020 10:33:45 PM",
+                                            "end-time": "Oct 6, 2020 10:33:45 PM",
+                                            "duration-in-seconds": 0,
+                                            "phase-type": "POST_BUILD",
+                                            "phase-status": "SUCCEEDED"
+                                        },
+                                        {
+                                            "phase-context": [
+                                                ": "
+                                            ],
+                                            "start-time": "Oct 6, 2020 10:33:45 PM",
+                                            "end-time": "Oct 6, 2020 10:33:45 PM",
+                                            "duration-in-seconds": 0,
+                                            "phase-type": "UPLOAD_ARTIFACTS",
+                                            "phase-status": "SUCCEEDED"
+                                        },
+                                        {
+                                            "phase-context": [
+                                                ": "
+                                            ],
+                                            "start-time": "Oct 6, 2020 10:33:45 PM",
+                                            "end-time": "Oct 6, 2020 10:33:47 PM",
+                                            "duration-in-seconds": 2,
+                                            "phase-type": "FINALIZING",
+                                            "phase-status": "SUCCEEDED"
+                                        },
+                                        {
+                                            "start-time": "Oct 6, 2020 10:33:47 PM",
+                                            "phase-type": "COMPLETED"
+                                        }
+                                    ],
+                                    "queued-timeout-in-minutes": 480
+                                },
+                                "current-phase": "COMPLETED",
+                                "current-phase-context": "[: ]",
+                                "version": "1"
+                            },
+                            "resources": [
+                                "arn:aws:codebuild:eu-west-1:499030764380:build/epython-codebuild:eef1f725-95aa-4ea2-9ac3-652bbdf347af"
+                            ],
+                            "additionalAttributes": {}
+                        }
+                    }
+                }
+            ]
+        }
+    }
+}

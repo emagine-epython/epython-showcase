@@ -1,0 +1,7 @@
+/* This line is theme specific - it includes the base theme CSS */
+@import 'alabaster.css';  /* for Alabaster */
+/*@import 'theme.css';       /* for the Read the Docs theme */
+
+h1, h2, h3 {
+    color: rgb(255,80,0);
+}
