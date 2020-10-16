@@ -179,3 +179,13 @@ Example of taking lowest bid, highest ask and average mid at daily frequency.
             AND timestamp '{end_dt:%Y-%m-%d %H:%M:%S.000}'
     GROUP BY dt
     ORDER BY dt
+
+API Reference
+-------------
+
+.. autoclass:: tsdb.base.TimeSeries
+    :members:
+
+.. autoclass:: tsdb.kdb.KDBTimeSeries
+    :members: q
+
