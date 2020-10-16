@@ -32,7 +32,8 @@ release = '0.1'
 # ones.
 extensions = [
     'sphinx_copybutton',
-    'nbsphinx'
+    'nbsphinx',
+    'sphinx.ext.autodoc'
 ]
 
 # Add any paths that contain templates here, relative to this directory.
