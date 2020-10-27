@@ -1,0 +1,14 @@
+Crawler:
+  DatabaseName: epython-marketdata
+  Name: fxcm
+  Role: service-role/AWSGlueServiceRole-marketdata
+  SchemaChangePolicy:
+    DeleteBehavior: DEPRECATE_IN_DATABASE
+    UpdateBehavior: UPDATE_IN_DATABASE
+  Targets:
+    CatalogTargets: []
+    DynamoDBTargets: []
+    JdbcTargets: []
+    S3Targets:
+    - Exclusions: []
+      Path: s3://epython-marketdata/refinitiv/
