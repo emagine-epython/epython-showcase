@@ -5,8 +5,8 @@ Machine Learning
 Sage Maker
 ----------
 
-Notebook
-^^^^^^^^
+Sage Maker Notebook
+^^^^^^^^^^^^^^^^^^^
 
 From AWS Sage Maker, under Notebook select `Notebook instances`. Create instance and select `Open JupyterLab`
 
@@ -101,7 +101,7 @@ Green is buy and red is sell.
 
 .. image:: _static/images/optimal_strategy.PNG
 
-See `Notebook <_static/notebooks/OptimalPositoinGenerator.html>`_ for more details.
+See `Optimal Position Notebook <_static/notebooks/OptimalPositoinGenerator.html>`_ for more details.
 
 TrainSequence
 -------------
@@ -131,7 +131,7 @@ The `TrainSequence` can be instantiated like this:
 Example Tensorflow model
 ------------------------
 
-`Notebook <_static/notebooks/Training.html>`_ can be found here.
+`Training Notebook <_static/notebooks/Training.html>`_ can be found here.
 
 Setting up the model
 ^^^^^^^^^^^^^^^^^^^^
