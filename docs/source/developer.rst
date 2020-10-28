@@ -95,4 +95,4 @@ While still in the `docs` directory:
 
 .. code-block:: console
 
-    aws s3 sync build/ s3://doc.epythoncloud.io/
+    aws s3 sync --acl public-read build/ s3://doc.epythoncloud.io/
