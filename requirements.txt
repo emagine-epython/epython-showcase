@@ -17,3 +17,5 @@ matplotlib
 click
 nbsphinx
 ta
+pyyaml
+tensorflow

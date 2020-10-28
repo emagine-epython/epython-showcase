@@ -20,6 +20,10 @@ COMMANDS = [
 ]
 
 
+kdb_available = pytest.mark.skipif(True, reason='require conneciton to KDB+')
+
+
+@kdb_available
 @pytest.fixture
 def ts():
     with qconnection.QConnection(host='localhost', port=5001) as q:
@@ -36,7 +40,7 @@ def ts():
     return ts
 
 
-@pytest.mark.skip(reason="Test only when there is kdb server running locally")
+@kdb_available
 def test_kdb(ts):
     res = ts.curve(
         datetime(2020, 10, 8, 22, 31, 6),
@@ -51,6 +55,7 @@ def test_kdb(ts):
     pd.testing.assert_frame_equal(res, expected)
 
 
+@kdb_available
 def test_cmd(ts):
     cmd = ts.q_cmd(
         datetime(2020, 10, 8, 22, 31, 6),
