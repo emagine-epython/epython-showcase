@@ -14254,7 +14254,7 @@ a.anchor-link {
      <div class="CodeMirror cm-s-jupyter">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="o">%</span><span class="k">matplotlib</span> inline
 <span class="kn">import</span> <span class="nn">kydb</span>
-<span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">date</span>
+<span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">date</span><span class="p">,</span> <span class="n">datetime</span>
 <span class="kn">from</span> <span class="nn">ml.optimal_position</span> <span class="kn">import</span> <span class="n">OptimalPositionGenerator</span>
 <span class="kn">import</span> <span class="nn">matplotlib</span> <span class="k">as</span> <span class="nn">mpl</span>
 <span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
@@ -14509,6 +14509,259 @@ a.anchor-link {
      </div>
 </div>
 </div>
+</div>
+
+</div>
+<div class="jp-Cell-inputWrapper"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
+<h2 id="Create-TimeSeries">Create TimeSeries<a class="anchor-link" href="#Create-TimeSeries">&#182;</a></h2>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs  ">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[103]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+     <div class="CodeMirror cm-s-jupyter">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">sql_template_path</span> <span class="o">=</span> <span class="s1">&#39;/templates/training_data_fxbtcjpy.sql&#39;</span>
+
+<span class="n">db</span><span class="p">[</span><span class="n">sql_template_path</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;&#39;&#39;</span>
+<span class="s1">WITH t AS</span>
+<span class="s1">    (SELECT date_parse(dt,</span>
+<span class="s1">        &#39;%Y-%m-</span><span class="si">%d</span><span class="s1"> %H:</span><span class="si">%i</span><span class="s1">:%S&#39;) AS dt,</span>
+<span class="s1">        bid, ask, mid, position</span>
+<span class="s1">    FROM training_data</span>
+<span class="s1">    WHERE symbol = &#39;</span><span class="si">{pair}</span><span class="s1">&#39;)</span>
+<span class="s1">SELECT *</span>
+<span class="s1">FROM t</span>
+<span class="s1">WHERE dt</span>
+<span class="s1">    BETWEEN timestamp &#39;{start_dt:%Y-%m-</span><span class="si">%d</span><span class="s1"> %H:%M:%S}&#39;</span>
+<span class="s1">        AND timestamp &#39;{end_dt:%Y-%m-</span><span class="si">%d</span><span class="s1"> %H:%M:%S}&#39;</span>
+<span class="s1">&#39;&#39;&#39;</span>
+</pre></div>
+
+     </div>
+</div>
+</div>
+</div>
+
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs  ">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[104]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+     <div class="CodeMirror cm-s-jupyter">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">ts</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="s1">&#39;AthenaTimeSeries&#39;</span><span class="p">,</span> <span class="s1">&#39;/symbols/ml/training_data/FX_BTC_JPY&#39;</span><span class="p">,</span>
+    <span class="n">database</span><span class="o">=</span><span class="s1">&#39;epython-marketdata&#39;</span><span class="p">,</span>
+    <span class="n">res_s3_path</span> <span class="o">=</span> <span class="s1">&#39;s3://epython-athena/result-cache/&#39;</span><span class="p">,</span>
+    <span class="n">sql_template_path</span><span class="o">=</span><span class="n">sql_template_path</span><span class="p">,</span>
+    <span class="n">sql_kwargs</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;pair&#39;</span><span class="p">:</span> <span class="s1">&#39;FX_BTC_JPY&#39;</span><span class="p">})</span>
+<span class="n">ts</span><span class="o">.</span><span class="n">write</span><span class="p">()</span>
+</pre></div>
+
+     </div>
+</div>
+</div>
+</div>
+
+</div>
+<div class="jp-Cell-inputWrapper"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
+<p>Test the TimeSeries</p>
+
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[106]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+     <div class="CodeMirror cm-s-jupyter">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">ts</span><span class="o">.</span><span class="n">sql</span><span class="p">(</span><span class="n">datetime</span><span class="p">(</span><span class="mi">2018</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">9</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="n">datetime</span><span class="p">(</span><span class="mi">2018</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">9</span><span class="p">,</span> <span class="mi">10</span><span class="p">)))</span>
+</pre></div>
+
+     </div>
+</div>
+</div>
+</div>
+
+<div class="jp-Cell-outputWrapper">
+
+
+<div class="jp-OutputArea jp-Cell-outputArea">
+
+<div class="jp-OutputArea-child">
+
+    
+    <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+
+
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
+<pre>
+WITH t AS
+    (SELECT date_parse(dt,
+        &#39;%Y-%m-%d %H:%i:%S&#39;) AS dt,
+        bid, ask, mid, position
+    FROM training_data
+    WHERE symbol = &#39;FX_BTC_JPY&#39;)
+SELECT *
+FROM t
+WHERE dt
+    BETWEEN timestamp &#39;2018-06-05 00:00:00&#39;
+        AND timestamp &#39;2018-06-05 00:00:00&#39;
+
+</pre>
+</div>
+</div>
+
+</div>
+
+</div>
+
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[110]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+     <div class="CodeMirror cm-s-jupyter">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">ts</span><span class="o">.</span><span class="n">curve</span><span class="p">(</span><span class="n">date</span><span class="p">(</span><span class="mi">2018</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">5</span><span class="p">),</span> <span class="n">date</span><span class="p">(</span><span class="mi">2018</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">6</span><span class="p">))</span>
+</pre></div>
+
+     </div>
+</div>
+</div>
+</div>
+
+<div class="jp-Cell-outputWrapper">
+
+
+<div class="jp-OutputArea jp-Cell-outputArea">
+
+<div class="jp-OutputArea-child">
+
+    
+    <div class="jp-OutputPrompt jp-OutputArea-prompt">Out[110]:</div>
+
+
+
+<div class="jp-RenderedHTMLCommon jp-RenderedHTML jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/html">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>bid</th>
+      <th>ask</th>
+      <th>mid</th>
+      <th>position</th>
+    </tr>
+    <tr>
+      <th>dt</th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>2018-06-05 00:00:01</th>
+      <td>853528.0</td>
+      <td>853599.0</td>
+      <td>853563.5</td>
+      <td>-1.0</td>
+    </tr>
+    <tr>
+      <th>2018-06-05 00:01:01</th>
+      <td>854146.0</td>
+      <td>854191.0</td>
+      <td>854168.5</td>
+      <td>-1.0</td>
+    </tr>
+    <tr>
+      <th>2018-06-05 00:02:00</th>
+      <td>854266.0</td>
+      <td>854378.0</td>
+      <td>854322.0</td>
+      <td>-1.0</td>
+    </tr>
+    <tr>
+      <th>2018-06-05 00:03:01</th>
+      <td>854442.0</td>
+      <td>854500.0</td>
+      <td>854471.0</td>
+      <td>-1.0</td>
+    </tr>
+    <tr>
+      <th>2018-06-05 00:04:01</th>
+      <td>854430.0</td>
+      <td>854469.0</td>
+      <td>854449.5</td>
+      <td>-1.0</td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+    </tr>
+    <tr>
+      <th>2018-06-05 23:56:01</th>
+      <td>869442.0</td>
+      <td>869460.0</td>
+      <td>869451.0</td>
+      <td>-1.0</td>
+    </tr>
+    <tr>
+      <th>2018-06-05 23:57:01</th>
+      <td>869303.0</td>
+      <td>869309.0</td>
+      <td>869306.0</td>
+      <td>-1.0</td>
+    </tr>
+    <tr>
+      <th>2018-06-05 23:58:01</th>
+      <td>869694.0</td>
+      <td>869698.0</td>
+      <td>869696.0</td>
+      <td>-1.0</td>
+    </tr>
+    <tr>
+      <th>2018-06-05 23:59:01</th>
+      <td>869708.0</td>
+      <td>869749.0</td>
+      <td>869728.5</td>
+      <td>-1.0</td>
+    </tr>
+    <tr>
+      <th>2018-06-06 00:00:00</th>
+      <td>869523.0</td>
+      <td>869561.0</td>
+      <td>869542.0</td>
+      <td>-1.0</td>
+    </tr>
+  </tbody>
+</table>
+<p>1299 rows × 4 columns</p>
+</div>
+</div>
+
+</div>
+
+</div>
+
 </div>
 
 </div>
