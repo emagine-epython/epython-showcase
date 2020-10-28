@@ -20,9 +20,10 @@ Indices and tables
 * :ref:`search`
 
 .. toctree::
-   architecture.rst
-   setting_up.rst
-   vscode.rst
-   marketdata.rst
-   tsdb.rst
-   developer.rst
+   architecture
+   setting_up
+   vscode
+   marketdata
+   tsdb
+   developer
+   machine_learning

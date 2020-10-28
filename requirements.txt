@@ -18,3 +18,4 @@ click
 nbsphinx
 ta
 pyyaml
+tensorflow

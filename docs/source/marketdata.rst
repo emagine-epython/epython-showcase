@@ -106,3 +106,30 @@ queries on that same data fast, really fast.
 
 .. image:: _static/images/athena.png
 
+Life Cycle
+----------
+
+Athena queries are stored in an s3 bucket `epython-athena`.
+
+This means repeated query would return very quickly, but it would also mean that the bucket would progressively get larger.
+
+We could solve this by adding a lifecycle rule to the bucket.
+
+.. image:: _static/images/s3_lifecycle_rule.PNG
+
+Apply to all objects in the bucket
+
+.. image:: _static/images/s3_lifecycle_name_and_scope.PNG
+
+We can transition data into cheaper storage if there is a regulatory requirement.
+But in this case we do not need that.
+
+.. image:: _static/images/s3_lifecycle_transition.PNG
+
+Now we choose to expire and delete objects from this bucket after 7 days.
+
+.. image:: _static/images/s3_lifecycle_expiration.PNG
+
+Acknowledge that object in this bucket would live only for 7 days.
+
+.. image:: _static/images/s3_lifecycle_review.PNG
