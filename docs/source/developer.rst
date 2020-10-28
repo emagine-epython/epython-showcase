@@ -89,8 +89,10 @@ At the menu bar click ``Preview`` then ``Preview Running Application``
 Upload
 ^^^^^^
 
-The auto-build of the documentation isn't there yet. So manually upload with:
+The auto-build of the documentation isn't there yet. So manually upload with.
+
+While still in the `docs` directory:
 
 .. code-block:: console
 
-    aws s3 sync . s3://doc.epythoncloud.io/
+    aws s3 sync build/ s3://doc.epythoncloud.io/
