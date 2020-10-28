@@ -29,3 +29,21 @@ Green is buy and red is sell.
 .. image:: _static/images/optimal_strategy.PNG
 
 See `Notebook <_static/notebooks/OptimalPositoinGenerator.html>`_ for more details.
+
+Sage Maker
+----------
+
+From AWS Sage Maker, under Notebook select `Notebook instances`. Create instance and select `Open JupyterLab`
+
+Choose `conda_amazonei_tensorflow_p36` as a kernel.
+
+.. image:: _static/images/conda_amazonei_tensorflow_p36.PNG
+
+On the left hand side panel, select `Git`. Then put in your repo url
+
+.. image:: _static/images/clone_a_repo_url.PNG
+
+Optionally you could choose a different branch. I usually like to work on a development branch.
+
+.. image:: _static/images/git_select_development_branch.PNG
+
