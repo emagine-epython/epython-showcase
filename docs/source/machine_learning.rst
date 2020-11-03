@@ -5,8 +5,8 @@ Machine Learning
 Sage Maker
 ----------
 
-Notebook
-^^^^^^^^
+Sage Maker Notebook
+^^^^^^^^^^^^^^^^^^^
 
 From AWS Sage Maker, under Notebook select `Notebook instances`. Create instance and select `Open JupyterLab`
 
@@ -101,7 +101,7 @@ Green is buy and red is sell.
 
 .. image:: _static/images/optimal_strategy.PNG
 
-See `Notebook <_static/notebooks/OptimalPositoinGenerator.html>`_ for more details.
+See `Optimal Position Notebook <_static/notebooks/OptimalPositoinGenerator.html>`_ for more details.
 
 TrainSequence
 -------------
@@ -130,6 +130,8 @@ The `TrainSequence` can be instantiated like this:
 
 Example Tensorflow model
 ------------------------
+
+`Training Notebook <_static/notebooks/Training.html>`_ can be found here.
 
 Setting up the model
 ^^^^^^^^^^^^^^^^^^^^
@@ -179,7 +181,7 @@ Training the model
 
     model.fit_generator(generator=seq, epochs=10, workers=cpu_count(), use_multiprocessing=True))
 
-Modle performance
+Model performance
 ^^^^^^^^^^^^^^^^^
 
 We can see the performance during training. Loss should be coming down
@@ -217,3 +219,17 @@ train the model and then use the model to predict.
 Orange line is the optimal position, blue is the prediciton.
 
 .. image:: _static/images/trade_position_prediction.PNG
+
+Persisting the model 
+--------------------
+
+The model can be persisted in a file and uploaded to KYDB.
+
+::
+
+    model_file = 'fx_btc_jpy_model.h5'
+    model.save(model_file)
+    db = kydb.connect('s3://epython')
+    with open(model_file, 'rb') as f:
+    data = f.read()
+    db['/ml/models/' + model_file] = data

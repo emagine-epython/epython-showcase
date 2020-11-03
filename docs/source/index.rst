@@ -25,5 +25,5 @@ Indices and tables
    vscode
    marketdata
    tsdb
-   developer
    machine_learning
+   developer
