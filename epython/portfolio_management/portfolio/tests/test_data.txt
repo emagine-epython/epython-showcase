@@ -1,0 +1,3 @@
+symbol,name,instrument_type,category,description,venue
+AAP,Apple,equity,Nasdaq,Apple stock,NYSE
+GOOG,Alphabet Inc,Nasdaq,Alphabet,NYSE
