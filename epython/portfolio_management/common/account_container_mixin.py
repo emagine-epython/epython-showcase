@@ -5,12 +5,8 @@ import datetime
 
 class AccountContainerMixin:
 
-    def add_account(self, account):
-        assert isinstance(account, Account)
-        if account not in self.accounts():
-            self.accounts().append(account)
-            return True
-        return False
+    def add_account(self, account_id):
+        self.accounts().add(account_id)
 
     def delete_account(self, account_id):
         item = [x for x in self.accounts() if x.id() == account_id]
@@ -26,12 +22,15 @@ class AccountContainerMixin:
         return None
 
     @kydb.stored
-    def accounts(self) -> list:
-        return []
+    def accounts(self) -> set:
+        return set()
+
+    def accounts_obj(self) -> list:
+        return [self.db[a] for a in self.accounts()]
 
     def get_balance(self) -> dict:
         balances = {}
-        for account in self.accounts():
+        for account in self.accounts_obj():
             balance = account.get_balance()
             if account.ccy() not in balances:
                 balances[account.ccy()] = balance

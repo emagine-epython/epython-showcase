@@ -24,22 +24,31 @@ def test_cash_manager(db):
     _trx2 = Factory.create('CashTrx', db=db, amount=1000.01, ccy='USD', description='test2', ts=dates[1])
     _trx3 = Factory.create('CashTrx', db=db, amount=1000.01, ccy='USD', description='test3', ts=dates[2])
 
-    _account1.cash_trxs().extend([_trx1, _trx2, _trx3])
+    _account1.add_cash_trx(_trx1.id())
+    _account1.add_cash_trx(_trx2.id())
+    _account1.add_cash_trx(_trx3.id())
 
     _trx11 = Factory.create('CashTrx', db=db, amount=1000.01, ccy='USD', description='test1', ts=dates[0])
     _trx12 = Factory.create('CashTrx', db=db, amount=1000.01, ccy='USD', description='test2', ts=dates[1])
     _trx13 = Factory.create('CashTrx', db=db, amount=1000.01, ccy='USD', description='test3', ts=dates[2])
-    _account2.cash_trxs().extend([_trx11, _trx12, _trx13])
+
+    _account2.add_cash_trx(_trx11.id())
+    _account2.add_cash_trx(_trx12.id())
+    _account2.add_cash_trx(_trx13.id())
 
     _trx21 = Factory.create('CashTrx', db=db, amount=1000.01, ccy='USD', description='test1', ts=dates[0])
     _trx22 = Factory.create('CashTrx', db=db, amount=1000.01, ccy='USD', description='test2', ts=dates[1])
     _trx23 = Factory.create('CashTrx', db=db, amount=1000.01, ccy='USD', description='test3', ts=dates[2])
-    _account3.cash_trxs().extend([_trx21, _trx22, _trx23])
 
-    _cash_manager.add_account(_account1)
-    _cash_manager.add_account(_account2)
-    _cash_manager.add_account(_account3)
-    for account in _cash_manager.accounts():
+    _account3.add_cash_trx(_trx21.id())
+    _account3.add_cash_trx(_trx22.id())
+    _account3.add_cash_trx(_trx23.id())
+
+    _cash_manager.add_account(_account1.id())
+    _cash_manager.add_account(_account2.id())
+    _cash_manager.add_account(_account3.id())
+
+    for account in _cash_manager.accounts_obj():
         print('Account[{0}]: {1}'.format(account.id(), account))
 
     balances = _cash_manager.get_balance()

@@ -9,15 +9,10 @@ QUERY_RESULT_CACHE = '/cache/'
 
 class InterestRateHistory(SQLMixin, kydb.DbObj):
 
-
-
-    @kydb.stored
-    def path(self) -> str:
-        return ''
-
     @kydb.stored
     def history(self) -> list:
         return []
+
 
 SQL_TEMPLATE = '''
 WITH t AS

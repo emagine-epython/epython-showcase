@@ -1,9 +1,10 @@
 import kydb
-from enum import Enum
+from enum import IntEnum
 import datetime
+from portfolio_management.common.base_item import BaseItem
 
 
-class EventType(Enum):
+class EventType(IntEnum):
     """
     Represent stages in deal life cycle
     """
@@ -16,17 +17,13 @@ class EventType(Enum):
     Exercise = 6
 
 
-class Event(kydb.DbObj):
+class Event(BaseItem, kydb.DbObj):
     """
     Marks stages in deal life cycle
     Applying an event changes deal state
     All deals start with an Open EVent
     Depending upon deal type, some or all events may apply
     """
-
-    @kydb.stored
-    def id(self) -> str:
-        return ''
 
     @kydb.stored
     def event_type(self) -> EventType:

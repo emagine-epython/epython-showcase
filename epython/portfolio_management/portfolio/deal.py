@@ -20,7 +20,7 @@ class Deal(BaseItem, AccountContainerMixin, PositionMixin, kydb.DbObj):
         return {}
 
     def __str__(self):
-        return '{0}[{1}] {2}'.format(self.id(), self.state(), self.positions())
+        return '{0}[{1}]'.format(self.id(), self.state())
 
     def apply_event(self, event_type, price=None, qty=None, ccy=None):
         if event_type == EventType.Amend:
@@ -31,12 +31,16 @@ class Deal(BaseItem, AccountContainerMixin, PositionMixin, kydb.DbObj):
             if ccy:
                 self.ccy.setvalue(ccy)
 
-        self.events().append(self.state())
-        self.state.setvalue(Factory.create('Event', db=self.db, event_type=event_type))
+        self.events().add(self.state())
+        event = Factory.create('Event', db=self.db, event_type=event_type)
+        self.state.setvalue(event.id())
 
     @kydb.stored
-    def instrument(self) -> Instrument:
-        return None
+    def instrument(self) -> str:
+        return ''
+
+    def instrument_obj(self) -> Instrument:
+        return self.db[self.instrument()]
 
     @kydb.stored
     def direction(self) -> str:
@@ -51,8 +55,16 @@ class Deal(BaseItem, AccountContainerMixin, PositionMixin, kydb.DbObj):
         return 0.00
 
     @kydb.stored
-    def events(self) -> list:
-        return []
+    def events(self) -> set:
+        return set()
+
+    @kydb.stored
+    def events_obj(self) -> Event:
+        return None
+
+    @kydb.stored
+    def instrument(self) -> str:
+        return ''
 
 
 class DealEq(Deal):
@@ -67,7 +79,7 @@ class DealEq(Deal):
     def positions(self) -> dict:
         positions = {
             self.ccy() : - self.qty() * self.price(),
-            self.instrument().symbol(): self.qty()
+            self.instrument_obj().symbol(): self.qty()
         }
         return positions
 
@@ -106,9 +118,8 @@ class DealFx(Deal):
         positions = {self.ccy1(): self.ccy1_amount() * factor, self.ccy2(): self.ccy2_amount() * factor * -1}
         return positions
 
-    @kydb.stored
-    def instrument(self) -> InstrumentFx:
-        return None
+    def instrument_obj(self) -> InstrumentFx:
+        return self.db[self.instrument()]
 
 
 def main():

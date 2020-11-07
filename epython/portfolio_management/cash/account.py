@@ -1,12 +1,13 @@
 import kydb
 import datetime
-
+from cash.cash_trx import CashTrx
 from common.position_mixin import PositionMixin
 from portfolio_management.kydb_config import OBJDB_CONFIG
 from portfolio_management.cash.interest_rate import InterestRate
 from portfolio_management.utils.sql import SQLMixin
-from portfolio_management.common.base_item import BaseItem, Factory
+from portfolio_management.common.base_item import BaseItem, Factory, ROOT_PATH
 import logging
+import json
 
 LOGGER = logging.getLogger(__name__)
 
@@ -21,19 +22,22 @@ class Account(BaseItem, PositionMixin, SQLMixin, kydb.DbObj):
     """
 
     @kydb.stored
-    def path(self):
-        return None
-
-    @kydb.stored
     def ccy(self):
         return None
 
     def __str__(self):
         return '{0}[{1}]'.format(self.id(), self.ccy())
 
+    def add_cash_trx(self, cash_trx_id):
+        self.cash_trxs().add(cash_trx_id)
+
     @kydb.stored
-    def cash_trxs(self):
-        return []
+    def cash_trxs(self) -> set():
+        return set()
+
+    def cash_trxs_obj(self) -> list:
+        path = BaseItem
+        return [self.db[t] for t in self.cash_trxs()]
 
     def get_balance(self) -> float:
         '''
@@ -42,7 +46,7 @@ class Account(BaseItem, PositionMixin, SQLMixin, kydb.DbObj):
         '''
         sync_point = self.sync_points().get('eod', datetime.datetime(2000, 1, 1))
         now = datetime.datetime.now()
-        return self.balance() + sum([x.amount() for x in self.cash_trxs() if sync_point < x.ts() <= now])
+        return self.balance() + sum([x.amount() for x in self.cash_trxs_obj() if sync_point < x.ts() <= now])
 
     @kydb.stored
     def balance(self) -> float:
@@ -60,18 +64,19 @@ class Account(BaseItem, PositionMixin, SQLMixin, kydb.DbObj):
         interest_rate = 0.31 / 100
         day_count = InterestRate.day_count()
         accrual = round(self.get_balance() * (interest_rate / day_count), 2)
-        self.cash_trxs().append(Factory.create('CashTrx', db=self.db, amount=accrual, ccy=self.ccy(),
-                                               description='interest accrual', ts=dt - datetime.timedelta(seconds=1)))
+        self.deposit(amount=accrual, date=dt - datetime.timedelta(seconds=1), description='interest accrual')
         self.balance.setvalue(self.get_balance())
         self.sync_points()['eod'] = dt
 
     def deposit(self, amount, date, description):
         trx = Factory.create('CashTrx', db=self.db, amount=amount, ccy=self.ccy(), ts=date, description=description)
-        self.cash_trxs().append(trx)
+        self.db[trx.path()] = trx
+        self.add_cash_trx(trx.id())
 
     def withdrawal(self, amount, date, description):
         trx = Factory.create('CashTrx', db=self.db, amount=-amount, ccy=self.ccy(), ts=date, description=description)
-        self.cash_trxs().append(trx)
+        self.db[trx.path()] = trx
+        self.add_cash_trx(trx.id())
 
 
 def main():

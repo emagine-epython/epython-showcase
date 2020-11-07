@@ -13,32 +13,32 @@ def setup_book(db, datetime_items):
 
     _book1 = Factory.create('Book', db=db)
 
-    _instrument1 = Factory.create('Instrument', db=db, name='Apple', id='AAP',
+    _instrument1 = Factory.create('Instrument', db=db, name='Apple',
                                   instrument_type='equity', category='Nasdaq', symbol='AAP',
                                   description='Apple stock', venue='NYSE')
     print('Instrument: {0}'.format(_instrument1))
 
-    _deal1 = Factory.create('DealEq', db=db, state=_event, instrument=_instrument1, price=2.24, qty=1000, ccy='USD',
+    _deal1 = Factory.create('DealEq', db=db, state=_event.id(), instrument=_instrument1.id(), price=2.24, qty=1000, ccy='USD',
                             updated=datetime_items['today'])
     print('Deal: {0}'.format(_deal1))
 
     _instrument2 = Factory.create('InstrumentFx', db=db, ccy_pair='EURUSD',
                                   instrument_type='fx', category='spot', venuw='NYSE')
-    _deal2 = Factory.create('DealFx', db=db, state=_event, instrument=_instrument2, rate=1.1747, qty=1000, ccy1='EUR',
+    _deal2 = Factory.create('DealFx', db=db, state=_event.id(), instrument=_instrument2.id(), rate=1.1747, qty=1000, ccy1='EUR',
                             ccy2='USD', ccy1_amount=1000, ccy2_amount=1000/1.747, updated=datetime_items['today'])
 
-    _instrument3 = Factory.create('Instrument', db=db, name='Google', id='GOOGL', instrument_type='equity',
+    _instrument3 = Factory.create('Instrument', db=db, name='Google', instrument_type='equity',
                                   category='Nasdaq', symbol='GOOGL', description='Google stock', venue='NYSE')
     print('Instrument: {0}'.format(_instrument1))
 
-    _deal3 = Factory.create('DealEq', db=db, state=_event, instrument=_instrument3, price=3.24, qty=200, ccy='USD',
+    _deal3 = Factory.create('DealEq', db=db, state=_event.id(), instrument=_instrument3.id(), price=3.24, qty=200, ccy='USD',
                             direction='S')
 
     print('Deal: {0}'.format(_deal3))
 
-    _instrument4 = Factory.create('InstrumentFx', db=db, ccy_pair='EURUSD', id='EURUSD', instrument_type='fx',
+    _instrument4 = Factory.create('InstrumentFx', db=db, ccy_pair='EURUSD', instrument_type='fx',
                                   category='spot', venue='NYSE')
-    _deal4 = Factory.create('DealFx', db=db, state=_event, instrument=_instrument4, rate=1.1747, qty=2200, ccy1='EUR',
+    _deal4 = Factory.create('DealFx', db=db, state=_event.id(), instrument=_instrument4.id(), rate=1.1747, qty=2200, ccy1='EUR',
                             ccy2='USD', ccy1_amount=2200, ccy2_amount=2200/1.1747, direction='S')
 
     _book1.add(_book1.deals(), _deal1, DealEq)
@@ -48,26 +48,27 @@ def setup_book(db, datetime_items):
 
     print('book: {0}'.format(_book1))
 
-    _book1.add_account(Factory.create('Account', db=db, name=_book1.id(), ccy='USD'))
-    _book1.add_account(Factory.create('Account', db=db, name=_book1.id(), ccy='EUR'))
+    _book1.add_account(Factory.create('Account', db=db, name=_book1.id(), ccy='USD').id())
+    _book1.add_account(Factory.create('Account', db=db, name=_book1.id(), ccy='EUR').id())
 
     return _book1
 
 
 def test_book(db, datetime_items):
     _book1 = setup_book(db, datetime_items)
-    _accountUSD = [x for x in _book1.accounts() if x.ccy() == 'USD'][0]
+    _accountUSD = [x for x in _book1.accounts_obj() if x.ccy() == 'USD'][0]
     _accountUSD.deposit(2500, datetime_items['today'], 'funds')
-    _deal3 = _book1.create_deal('DealEq', db, 'AAP', 100, 2.34, 'USD', datetime_items['today'], direction='B')
-    assert(isinstance(_deal3, DealEq))
-    assert (isinstance(_deal3.instrument(), Instrument))
-    assert (_deal3.instrument().symbol(), 'AAP')
+    db[_accountUSD.id()] = _accountUSD
+    _deal = _book1.create_deal('DealEq', db, 'AAP', 100, 2.34, 'USD', datetime_items['today'], direction='B')
+    assert(isinstance(_deal, DealEq))
+    assert (isinstance(_deal.instrument_obj(), Instrument))
+    assert (_deal.instrument_obj().symbol(), 'AAP')
 
 
 def test_deposit(db, datetime_items):
 
     _book1 = setup_book(db, datetime_items)
-    _accountUSD = [x for x in _book1.accounts() if x.ccy() == 'USD'][0]
+    _accountUSD = [x for x in _book1.accounts_obj() if x.ccy() == 'USD'][0]
     _accountUSD.deposit(2500, datetime_items['today'], 'funds')
     assert(_accountUSD.get_balance() == 2500)
 
@@ -75,7 +76,7 @@ def test_deposit(db, datetime_items):
 def test_withdrawal(db, datetime_items):
 
     _book1 = setup_book(db, datetime_items)
-    _accountEUR = [x for x in _book1.accounts() if x.ccy() == 'USD'][0]
+    _accountEUR = [x for x in _book1.accounts_obj() if x.ccy() == 'USD'][0]
     _accountEUR.deposit(2500, datetime_items['today'], 'funds')
     assert(_accountEUR.get_balance() == 2500)
     _accountEUR.withdrawal(1500, datetime_items['today'], 'funds')

@@ -1,4 +1,6 @@
 import kydb
+
+from portfolio.book import Book
 from portfolio_management.common.position_mixin import PositionMixin
 from portfolio_management.common.account_container_mixin import AccountContainerMixin
 from portfolio_management.common.base_item import BaseItem, Factory
@@ -23,17 +25,21 @@ class Portfolio(BaseItem, AccountContainerMixin, PositionMixin, kydb.DbObj):
     """
 
     @kydb.stored
-    def books(self) -> list:
-        return []
+    def books(self) -> set:
+        return set()
+
+    def books_obj(self) -> list:
+        return [self.db[b] for b in self.books()]
 
     def positions(self) -> dict:
         positions = self.get_balance()
-        positions.update(self.child_positions(self.books()))
+        positions.update(self.child_positions(self.books_obj()))
         return positions
 
 
 def main():
     pass
+
 
 if __name__ == '__main__':
     main()

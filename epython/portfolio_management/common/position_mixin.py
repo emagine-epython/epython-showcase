@@ -11,7 +11,10 @@ class PositionMixin(kydb.DbObj):
     def add(self, items, item, item_type):
         assert(isinstance(item, item_type))
         if item not in items:
-            items.append(item)
+            if isinstance(item, str):
+                items.add(item)
+            else:
+                items.add(item.id())
             return True
         return False
 

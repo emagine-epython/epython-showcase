@@ -20,7 +20,7 @@ class CashManager(BaseItem, AccountContainerMixin, PositionMixin, kydb.DbObj):
         if not date:
             now = datetime.datetime.now()
             date =  datetime.datetime(now.year, now.month, now.day)
-        for account in self.accounts():
+        for account in self.accounts_obj():
             account.eod(date)
         self.balance.setvalue(self.get_balance())
         self.sync_points()['eod'] = date
@@ -31,7 +31,7 @@ class CashManager(BaseItem, AccountContainerMixin, PositionMixin, kydb.DbObj):
 
     def calc_balance(self, ts=None) -> dict:
         balances = {}
-        for account in self.accounts():
+        for account in self.accounts_obj():
             account.calc_balance(ts)
             balance = account.balance()
             if account.ccy() not in balances:

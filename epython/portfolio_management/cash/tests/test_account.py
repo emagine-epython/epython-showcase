@@ -28,7 +28,11 @@ def test_account_trxs(db):
     _trx1 = Factory.create('CashTrx', db=db, amount=1000.01, ccy='USD', description='test1', ts=dates[0])
     _trx2 = Factory.create('CashTrx', db=db, amount=1000.01, ccy='USD', description='test2', ts=dates[1])
     _trx3 = Factory.create('CashTrx', db=db, amount=1000.01, ccy='USD', description='test3', ts=dates[2])
-    _account.cash_trxs().extend([_trx1, _trx2, _trx3])
+
+    _account.add_cash_trx(_trx1.id())
+    _account.add_cash_trx(_trx2.id())
+    _account.add_cash_trx(_trx3.id())
+
     for t in _account.cash_trxs():
         print(t)
     # balance

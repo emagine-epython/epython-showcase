@@ -11,11 +11,11 @@ def setup_deal(db, datetime_items):
     _event = Factory.create('Event', db=db, event_type=EventType.Open)
     assert (isinstance(_event, Event))
 
-    _instrument1 = Factory.create('Instrument', db=db, name='Apple', id='AAP', instrument_type='equity', category='Nasdaq',
+    _instrument1 = Factory.create('Instrument', db=db, name='Apple', instrument_type='equity', category='Nasdaq',
                                   symbol='AAP', description='Apple stock', venue='NYSE')
     print('Instrument: {0}'.format(_instrument1))
 
-    _deal1 = Factory.create('DealEq', db=db, state=_event, instrument=_instrument1, price=2.24, qty=1000,
+    _deal1 = Factory.create('DealEq', db=db, state=_event.id(), instrument=_instrument1.id(), price=2.24, qty=1000,
                             ccy='USD')
 
     print('Deal: {0}'.format(_deal1))
@@ -23,7 +23,7 @@ def setup_deal(db, datetime_items):
     _instrument2 = Factory.create('InstrumentFx', db=db, ccy_pair='EURUSD', instrument_type='fx',
                                   category='spot', venue='NYSE')
 
-    _deal2 = Factory.create('DealFx', db=db, state=_event, instrument=_instrument2, rate=1.1747, qty=1000,
+    _deal2 = Factory.create('DealFx', db=db, state=_event.id(), instrument=_instrument2.id(), rate=1.1747, qty=1000,
                             ccy1='EUR', ccy2='USD', ccy1_amount=1000, ccy2_amount=1000/1.1747,
                             updated=datetime_items['today'])
 
@@ -35,8 +35,8 @@ def test_deal(db, datetime_items):
     _deals = setup_deal(db, datetime_items)
     assert(isinstance(_deals[0], DealEq))
     assert (isinstance(_deals[1], DealFx))
-    assert (isinstance(_deals[0].instrument(), Instrument))
-    assert (isinstance(_deals[1].instrument(), InstrumentFx))
+    assert (isinstance(_deals[0].instrument_obj(), Instrument))
+    assert (isinstance(_deals[1].instrument_obj(), InstrumentFx))
 
     print('Positions')
     _positions = _deals[0].positions()

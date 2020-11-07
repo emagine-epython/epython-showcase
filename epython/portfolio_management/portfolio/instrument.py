@@ -1,5 +1,5 @@
 import kydb
-from portfolio_management.common.base_item import BaseItem, Factory
+from portfolio_management.common.base_item import BaseItem
 
 
 class InstrumentBase(BaseItem, kydb.DbObj):
