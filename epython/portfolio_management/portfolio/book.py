@@ -24,7 +24,14 @@ class Book(BaseItem, AccountContainerMixin, PositionMixin, kydb.DbObj):
         return set()
 
     def deals_obj(self) -> list:
-        return [self.db[d] for d in self.deals()]
+        deals = []
+        deal_types = ['DealEq', 'DealFx']
+        for d in self.deals():
+            for deal_type in deal_types:
+                if self.db.exists(Factory.get_class_path(deal_type, d)):
+                    deals.append(self.db[Factory.get_class_path(deal_type, d)])
+                    break
+        return deals
 
     def positions(self) -> dict:
         positions = {}

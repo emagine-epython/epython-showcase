@@ -13,8 +13,11 @@ class Deal(BaseItem, AccountContainerMixin, PositionMixin, kydb.DbObj):
     """
 
     @kydb.stored
-    def state(self):
-        return None
+    def state(self) -> str:
+        return ''
+
+    def state_obj(self) -> Event:
+        return self.db[Factory.get_class_path('Event', self.state())]
 
     def positions(self) -> dict:
         return {}
@@ -40,7 +43,7 @@ class Deal(BaseItem, AccountContainerMixin, PositionMixin, kydb.DbObj):
         return ''
 
     def instrument_obj(self) -> Instrument:
-        return self.db[self.instrument()]
+        return self.db[Factory.get_class_path('Instrument', self.instrument())]
 
     @kydb.stored
     def direction(self) -> str:
@@ -59,8 +62,8 @@ class Deal(BaseItem, AccountContainerMixin, PositionMixin, kydb.DbObj):
         return set()
 
     @kydb.stored
-    def events_obj(self) -> Event:
-        return None
+    def events_obj(self) -> list:
+        return [self.db[Factory.get_class_path('Event', a)] for a in self.events()]
 
     @kydb.stored
     def instrument(self) -> str:
@@ -119,7 +122,7 @@ class DealFx(Deal):
         return positions
 
     def instrument_obj(self) -> InstrumentFx:
-        return self.db[self.instrument()]
+        return self.db[Factory.get_class_path('InstrumentFx', self.instrument())]
 
 
 def main():

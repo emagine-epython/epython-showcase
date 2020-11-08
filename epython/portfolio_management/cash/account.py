@@ -37,7 +37,7 @@ class Account(BaseItem, PositionMixin, SQLMixin, kydb.DbObj):
 
     def cash_trxs_obj(self) -> list:
         path = BaseItem
-        return [self.db[t] for t in self.cash_trxs()]
+        return [self.db[Factory.get_class_path('CashTrx', t)] for t in self.cash_trxs()]
 
     def get_balance(self) -> float:
         '''

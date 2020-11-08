@@ -1,6 +1,7 @@
 from portfolio_management.common.base_item import Factory
 from portfolio_management.portfolio.event import Event, EventType
 from portfolio_management.portfolio.book import Book
+from portfolio_management.portfolio.instrument import Instrument, InstrumentFx
 from portfolio_management.portfolio.deal import DealEq, DealFx
 import datetime
 from test_db import db
@@ -107,7 +108,7 @@ def test_portfolio(db, datetime_items):
                             ccy1='EUR', ccy2='USD', ccy1_amount=1000, ccy2_amount=1000/1.27)
     print('Deal2: {0}'.format(_deal2))
 
-    _instrument3 = Factory.create('Instrument', db=db, name='Google', id='GOOGL', instrument_type='equity',
+    _instrument3 = Factory.create('Instrument', db=db, name='Google', instrument_type='equity',
                                   category='Nasdaq', symbol='GOOGL', description='Google stock', venue='NYSE')
     print('Instrument3: {0}'.format(_instrument3))
 
@@ -121,6 +122,25 @@ def test_portfolio(db, datetime_items):
     _deal4 = Factory.create('DealFx', db=db, state=_event.id(), instrument=_instrument4.id(), rate=1.27, qty=1000, ccy1='EUR',
                             ccy2='USD', ccy1_amount=1000, ccy2_amount=1000/1.27)
     print('Deal4: {0}'.format(_deal4))
+
+    # assert deals
+    _test_deal1 = db[_deal1.path()]
+    assert (isinstance(_test_deal1, DealEq))
+    assert (_test_deal1 == _deal1)
+    assert (_test_deal1.instrument() == _deal1.instrument())
+    assert (_test_deal1.instrument_obj() == _deal1.instrument_obj())
+    assert (isinstance(_test_deal1.instrument_obj(), Instrument))
+    _test_instrument1 = db[_test_deal1.instrument_obj().path()]
+    assert (isinstance(_test_instrument1, Instrument))
+
+    _test_deal2 = db[_deal2.path()]
+    assert (isinstance(_test_deal2, DealFx))
+    assert (_test_deal2 == _deal2)
+    assert (_test_deal2.instrument() == _deal2.instrument())
+    assert (_test_deal2.instrument_obj() == _deal2.instrument_obj())
+    assert (isinstance(_test_deal2.instrument_obj(), InstrumentFx))
+    _test_instrument2 = db[_test_deal2.instrument_obj().path()]
+    assert (isinstance(_test_instrument2, InstrumentFx))
 
     _book1.add(_book1.deals(), _deal1.id(), str)
     _book1.add(_book1.deals(), _deal2.id(), str)

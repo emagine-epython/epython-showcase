@@ -29,7 +29,7 @@ class Portfolio(BaseItem, AccountContainerMixin, PositionMixin, kydb.DbObj):
         return set()
 
     def books_obj(self) -> list:
-        return [self.db[b] for b in self.books()]
+        return [self.db[Factory.get_class_path('Book', b)] for b in self.books()]
 
     def positions(self) -> dict:
         positions = self.get_balance()

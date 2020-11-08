@@ -13,20 +13,6 @@ class InterestRateHistory(SQLMixin, kydb.DbObj):
     def history(self) -> list:
         return []
 
-
-SQL_TEMPLATE = '''
-WITH t AS
-    (SELECT date_parse(datetime,
-        '%m/%d/%Y') AS dt
-    FROM interest_rate
-    WHERE pair = '{pair}'
-            AND year = '{dt:%Y}'
-SELECT *
-FROM t
-WHERE dt = date = '{dt:%Y-%m-%d}'        
-'''
-
-
 class InterestRate(SQLMixin, kydb.DbObj):
     """
     Interest rate
@@ -38,20 +24,6 @@ class InterestRate(SQLMixin, kydb.DbObj):
     @kydb.stored
     def day_count():
         return 365
-
-    @kydb.stored
-    def res_s3_path(self):
-        return None
-
-    def sql(self, dt, ccy):
-        dt = self._ensure_datetime(dt)
-
-        kwargs = {'dt': dt, 'ccy': ccy}
-
-        for k, v in self.sql_kwargs().items():
-            kwargs[k] = v
-
-        return self.sql_template().format(**kwargs)
 
     @kydb.stored
     def rate(self) -> float:

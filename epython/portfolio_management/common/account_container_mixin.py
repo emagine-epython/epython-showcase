@@ -1,6 +1,7 @@
 import kydb
 from portfolio_management.cash.account import Account
 import datetime
+from portfolio_management.common.base_item import Factory
 
 
 class AccountContainerMixin:
@@ -26,7 +27,7 @@ class AccountContainerMixin:
         return set()
 
     def accounts_obj(self) -> list:
-        return [self.db[a] for a in self.accounts()]
+        return [self.db[Factory.get_class_path('Account', a)] for a in self.accounts()]
 
     def get_balance(self) -> dict:
         balances = {}
