@@ -112,7 +112,8 @@ It takes the TimeSeries from `Optimal Position` and:
 
 1. Increase dimension by creating last n observable prices for every minute of the training data set. This is X
 2. Take Optimal position which is now Y. So now we have X predicting Y.
-3. Shuffle the training dataset on each Epoch.
+3. Normalise the look back observable so it values are between 0 and 1
+4. Shuffle the training dataset on each Epoch.
 
 For step one, there is a parameter `lookback_period` that can be used to control how far back the neutral network
 can see when training.
