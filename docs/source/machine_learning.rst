@@ -26,7 +26,7 @@ Put your name in the `User name` field and choose `epython-ml` for Execution rol
 
 Once the studio is ready, we can open it.
 
-.. image:: _static/images/sage_maker_open_studio.PNG
+.. image:: _static/images/sage_maker_open_studio.png
 
 For the SageMaker image, choose one that is relevent for you.
 
@@ -36,7 +36,7 @@ In this example I'm using Tensorflow. I have chose CPU instead of GPU because.
 2. The algorithm I am using is actually CPU bound because it relies on Training
    Sequence that generates training data on the fly. We will need to optimise this.
 
-.. image:: _static/images/sage_maker_image_tf_cpu.PNG
+.. image:: _static/images/sage_maker_image_tf_cpu.png
 
 Git
 ^^^
@@ -47,7 +47,7 @@ On the left hand side panel, select `Git`. Then put in your repo url
 
 Optionally you could choose a different branch. I usually like to work on a development branch.
 
-.. image:: _static/images/git_select_development_branch.PNG
+.. image:: _static/images/git_select_development_branch.png
 
 
 Now go ahead and launch a Python 3 Notebook
@@ -99,7 +99,7 @@ Picking some random 3 days windows we would see that if we manage to trade like 
 
 Green is buy and red is sell.
 
-.. image:: _static/images/optimal_strategy.PNG
+.. image:: _static/images/optimal_strategy.png
 
 See `Optimal Position Notebook <_static/notebooks/OptimalPositoinGenerator.html>`_ for more details.
 
