@@ -115,7 +115,7 @@ This means repeated query would return very quickly, but it would also mean that
 
 We could solve this by adding a lifecycle rule to the bucket.
 
-.. image:: _static/images/s3_lifecycle_rule.PNG
+.. image:: _static/images/s3_lifecycle_rule.png
 
 Apply to all objects in the bucket
 
