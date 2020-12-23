@@ -56,8 +56,21 @@ async def reload_model(model: TrainedModel):
     model_manager.reload_model()
 
 
+def _normalise_prices(prices):
+    min_price = max_price = prices[0]
+    for p in prices[1:]:
+        if p < min_price:
+            min_price = p
+        elif p > max_price:
+            max_price = p
+
+    diff = (max_price - min_price)
+    return [(x - min_price) / diff for x in prices]
+
+
 @app.post('/recommend/')
 async def recommend(marketdata: MarketData):
     model = model_manager.get_model()
-    res = model.predict([marketdata.hist_prices])[:, 1][0]
-    return float(res)
+    prices = _normalise_prices(marketdata.hist_prices)
+    res = model.predict([prices])[:, 1][0]
+    return 1 if res >= 0.5 else 0

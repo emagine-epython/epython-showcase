@@ -27,6 +27,10 @@ docker-compose up
 
 More details here: https://aws.amazon.com/blogs/compute/a-guide-to-locally-testing-containers-with-amazon-ecs-local-endpoints-and-docker-compose/
 
+Now point browser at http://[::1]:8080/docs
+
+Notice WSL2 binds localhost on IPV6 address.
+
 ### Test Data
 
 One can use the data in test_marketdata.json for testing.
