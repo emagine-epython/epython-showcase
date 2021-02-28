@@ -24,7 +24,7 @@ services:
           # define the home folder; credentials will be read from $HOME/.aws
           HOME: "/home"
           # You can change which AWS CLI Profile is used
-          AWS_PROFILE: "epython-tony.yum"
+          # AWS_PROFILE: "custom-aws-profile"
         networks:
             credentials_network:
                 # This special IP address is recognized by the AWS SDKs and AWS CLI 
