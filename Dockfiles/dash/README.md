@@ -32,3 +32,41 @@ More details here: https://aws.amazon.com/blogs/compute/a-guide-to-locally-testi
 Now point browser at http://[::1]:8080/docs
 
 Notice WSL2 binds localhost on IPV6 address.
+
+## Deploying
+
+
+### Building the container
+
+```
+docker build --tag epython-dash-demo:1.0 .
+```
+
+### Authenticating ECR
+
+Replace <account_id> with AWS account id.
+
+```
+aws ecr get-login-password --region eu-west-1 | docker login --username AWS --password-stdin <account_id>.dkr.ecr.eu-west-1.amazonaws.com
+```
+
+### Create a repository
+
+```
+aws ecr create-repository \
+    --repository-name epython-dash-demo \
+    --image-scanning-configuration scanOnPush=true \
+    --region eu-west-1
+```
+
+### Tag image
+
+```
+docker tag epython-dash-demo:1.0 <aws_account_id>.dkr.ecr.eu-west-1.amazonaws.com/epython-dash-demo:latest
+```
+
+### Push the image
+
+```
+docker push <aws_account_id>.dkr.ecr.eu-west-1.amazonaws.com/epython-dash-demo:latest
+```

@@ -12,6 +12,7 @@ RUN pip install --upgrade pip \
 EXPOSE 8080
 
 ADD tsdb /tsdb
+ADD dash_demo /dash_demo
 COPY app.py /
 
 CMD ["gunicorn", "--workers", "2", "app:server"]
