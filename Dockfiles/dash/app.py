@@ -146,7 +146,9 @@ def update_date_range(exchange, resolution, symbol, start_date, end_date):
     return (fig, measure_options, None)
     
     
+server = app.server
     
+# This is used when not running inside gunicorn
 if __name__ == "__main__":
     app.run_server(
         debug=True,

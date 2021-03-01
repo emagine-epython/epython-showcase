@@ -8,3 +8,4 @@ docs/build
 **/*.h5
 **/.ipynb_checkpoints/
 temp.ipynb
+Dockfiles/dash/tsdb/**
