@@ -21,24 +21,21 @@ tsdb = kydb.connect('dynamodb://epython/timeseries')
 
 exchanges = [x[:-1] for x in tsdb.ls('/symbols/')]
 exchange_dropdown = dcc.Dropdown(
-    id='exchange',
+    id='exchange-dropdown',
     options=[{'label': x, 'value': x} for x in exchanges],
-    value='bitflyer',
-    style={'width': '110px'}
+    value='bitflyer'
 )
 
     
 exchange = 'bitflyer'
 resolution_dropdown =  dcc.Dropdown(
-        id='resolution',
-        value='minutely',
-        style={'width': '140px'}
+        id='resolution-dropdown',
+        value='minutely'
     )
 
 
 symbols_dropdown = dcc.Dropdown(
-    id='ts-symbol',
-    style={'width': '160px'}
+    id='ts-symbol'
 )
 
 date_range = dcc.DatePickerRange(
@@ -52,24 +49,17 @@ measures = dcc.Checklist(
 ) 
     
             
-flex_row_style = {
-            'display': 'flex',
-            'flex-direction': 'row'
-        }
-
 layout =  html.Div([
     html.Div([
         exchange_dropdown,
         resolution_dropdown,
         symbols_dropdown,
-        ], style=flex_row_style),
+        ], className='flex-row'),
     html.Div(date_range),
     html.Div([
         measures,
-        dcc.Input(id='ts-path', style={
-            'margin-left': '20px',
-            'width': '275px'})
-        ], style=flex_row_style),
+        dcc.Input(id='ts-path')
+        ], className='flex-row'),
         
     html.Div(
             dcc.Loading(
@@ -86,12 +76,12 @@ layout =  html.Div([
     
 @app.callback(
     [
-    Output('resolution', 'options'),
-    Output('resolution', 'value'),
+    Output('resolution-dropdown', 'options'),
+    Output('resolution-dropdown', 'value'),
     Output('date-range', 'start_date'),
     Output('date-range', 'end_date'),
     ],
-    Input('exchange', 'value'))
+    Input('exchange-dropdown', 'value'))
 def update_exchange(exchange):
     start_date, end_date = DEFAULT_DATES[exchange]
     resolutions = [x[:-1] for x in tsdb.ls('/symbols/' + exchange)]
@@ -105,8 +95,8 @@ def update_exchange(exchange):
     Output('ts-symbol', 'value'),
     ],
     [
-    Input('exchange', 'value'),
-    Input('resolution', 'value')
+    Input('exchange-dropdown', 'value'),
+    Input('resolution-dropdown', 'value')
     ])
 def update_resolution(exchange, resolution):
     if not (exchange and resolution):
@@ -124,8 +114,8 @@ def update_resolution(exchange, resolution):
     Output("loading-output-1", "children")
     ],
     [
-    Input('exchange', 'value'),
-    Input('resolution', 'value'),
+    Input('exchange-dropdown', 'value'),
+    Input('resolution-dropdown', 'value'),
     Input('ts-symbol', 'value'),
     Input('date-range', 'start_date'),
     Input('date-range', 'end_date')

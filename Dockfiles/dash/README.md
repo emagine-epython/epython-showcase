@@ -4,8 +4,28 @@
 
 This is a container to run ePython dash demo
 
+## Environment Variables
+
+```
+export REDIS_HOST=<redis_host>
+export REDIS_PORT=6379
+```
+
+## Backend
+
+The demo requires a the backend service to be running.
+
+```
+python backend.py
+```
 
 ## Testing Locally
+
+### Running dash directly
+
+```
+python app.py
+```
 
 ### Run dash in gunicorn
 

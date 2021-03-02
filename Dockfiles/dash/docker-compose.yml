@@ -9,3 +9,4 @@ services:
     environment:
       HOST: "0.0.0.0"
       PORT: "8080"
+      REDIS_HOST: "epython-dash-demo.bqvjwk.ng.0001.euw1.cache.amazonaws.com"

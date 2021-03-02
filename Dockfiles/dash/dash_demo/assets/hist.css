@@ -1,0 +1,16 @@
+#exchange-dropdown {
+    width: 110px;
+}
+
+#resolution-dropdown {
+    width: 140px;
+}
+
+#ts-symbol {
+    width: 160px;
+}
+
+#ts-path {
+    margin-left: 20px;
+    width: 275px;
+}

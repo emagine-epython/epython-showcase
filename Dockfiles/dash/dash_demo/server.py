@@ -1,3 +1,3 @@
 import dash
 
-app = dash.Dash('dash', eager_loading=True)
+app = dash.Dash(__name__)

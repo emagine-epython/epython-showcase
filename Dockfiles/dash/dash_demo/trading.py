@@ -2,6 +2,8 @@
 import dash
 import dash_html_components as html
 import dash_core_components as dcc
+import redis
+import os
 from dash.dependencies import Output, Input, State
 from plotly.data import iris
 
@@ -10,12 +12,17 @@ from datetime import date
 import pandas as pd
 import plotly.express as px
 from .server import app
+from dash.exceptions import PreventUpdate
 
 
 tsdb = kydb.connect('dynamodb://epython/timeseries')
 ts = tsdb['/symbols/fxcm/minutely/USDJPY']
 hist_data = ts.curve(date(2018, 4, 8), date(2018, 4, 11))
 hist_data.sort_index(inplace=True)
+
+host = os.environ.get('REDIS_HOST', '127.0.0.1')
+port = os.environ.get('REDIS_PORT', '6379')
+redis_conn = redis.Redis(host=host, port=port)
 
 UNIT_QTY = [
     ('M', 1e6),
@@ -48,20 +55,6 @@ trade_data = [get_row(*x) for x in FAKE_TRADES]
 columns = ['dt', 'book', 'asset', 'qty', 'trade_size', 'price', 'trade_type']
 trade_df = pd.DataFrame(trade_data, columns=columns)
 
-flex_row_style = {
-            'display': 'flex',
-            'flex-direction': 'row'
-        }
-        
-buy_sell_button_style = {
-    'border-radius': '10px',
-    'border': '2px solid orange',
-    'font-size': '15pt',
-    'margin': '5px',
-    'padding': '5px 10px 5px 10px',
-    'box-shadow': '2px 2px 4px 4px #888888'
-}
-
 layout = html.Div([
     dcc.Slider(
         id='trade-size-slider',
@@ -71,22 +64,24 @@ layout = html.Div([
         value=100e3,
     ),
     html.Div([
+        dcc.Input(id='book', value='Book1'),
         dcc.Input(id='trade-size',
             style={'font-size': '16pt', 'width': '75px'}),
-        html.Button('Buy', id='buy', n_clicks=0,
-            style={'background-color': 'green', **buy_sell_button_style}),
-        html.Button('Sell', id='sell', n_clicks=0,
-            style={'background-color': 'red', **buy_sell_button_style}),
-    ], style=flex_row_style),
+        html.Button('Buy', id='buy-button', n_clicks=0,
+            className='buy-sell-button'),
+        html.Button('Sell', id='sell-button', n_clicks=0,
+            className='buy-sell-button'),
+    ]),
     html.Div(id='trade-msg'),
     html.Div([
-        dcc.Graph(id='price-pos-plot')], style=flex_row_style),
+        dcc.Graph(id='price-pos-plot')]),
     dcc.Interval(
         id='interval-component',
-        interval=1*1000, # in milliseconds
-        #interval=100000000, # in milliseconds
+        interval=1000, # in milliseconds
         n_intervals=0
-    )
+    ),
+    # hidden signal value
+    html.Div(id='tick-signal', style={'display': 'none'})
 ])
 
 @app.callback(
@@ -97,8 +92,21 @@ def update_trade_size(value):
     return f'{qty}{unit}'
     
 
+@app.callback(
+    Output('tick-signal', 'children'),
+    Input('interval-component', 'n_intervals'),
+    State('tick-signal', 'children')
+    )
+def compute_value(n, prev_tick):
+    tick = int(redis_conn.get('tick'))
+    if prev_tick == tick:
+        raise PreventUpdate
+
+    return tick
+
+
 @app.callback(Output('price-pos-plot', 'figure'),
-              Input('interval-component', 'n_intervals'))
+              Input('tick-signal', 'children'))
 def update_price_pos(n):
     period = 60 * 2 
     price_df = hist_data[:n+period]
@@ -114,12 +122,13 @@ def update_price_pos(n):
     fig.add_scatter(x=price_df.index, y=price_df.closeprice, mode='lines',
         opacity=0.5, name='price')
     return fig
-    
+
+
 @app.callback(
     Output('trade-msg', 'children'),
     [
-        Input('buy', 'n_clicks'),
-        Input('sell', 'n_clicks')
+        Input('buy-button', 'n_clicks'),
+        Input('sell-button', 'n_clicks')
     ],
     State('trade-size', 'value')
     )
@@ -136,5 +145,5 @@ def apply_trade(buy_clicks, sell_clicks, qty):
     f_qty = next(float(qty[:-1]) * q if u else float(qty) for u, q in UNIT_QTY if qty.endswith(u))
     if not f_qty:
         return '0 quantity. Do nothing'
-
+        
     return f'{verb} {qty}'
