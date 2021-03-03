@@ -4,11 +4,25 @@
 
 This is a container to run ePython dash demo
 
-## Environment Variables
+## Dependency library
 
 ```
-export REDIS_HOST=<redis_host>
-export REDIS_PORT=6379
+cp -rf ../../tsdb/ .
+```
+
+
+## Setup config
+
+```python
+
+import kydb
+
+db = kydb.connect('dynamodb://epython')
+
+db['/demos/epython-dash-demo/config'] = {
+    'REDIS_HOST': 'epython-dash-demo.bqvjwk.ng.0001.euw1.cache.amazonaws.com',
+    'REDIS_PORT': 6379
+}
 ```
 
 ## Backend
@@ -34,12 +48,6 @@ gunicorn --workers 2 app:server
 ```
 
 ### Run in Container under ECS environment
-
-Dependency library
-
-```
-cp -rf ../../tsdb/ .
-```
 
 Start docke-compose
 

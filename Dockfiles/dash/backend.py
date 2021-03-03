@@ -5,13 +5,16 @@ Only need 1 instance running
 """
 
 import redis
-import os
 import pickle
 import time
+import kydb
 
 if __name__ == '__main__':
-    host = os.environ.get('REDIS_HOST', '127.0.0.1')
-    port = os.environ.get('REDIS_PORT', '6379')
+    db = kydb.connect('dynamodb://epython')
+    config = db['/demos/epython-dash-demo/config']
+    
+    host = config.get('REDIS_HOST', '127.0.0.1')
+    port = config.get('REDIS_PORT', '6379')
     r = redis.Redis(host=host, port=port)
     
     r.set('tick', 0)

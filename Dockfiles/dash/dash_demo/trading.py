@@ -3,7 +3,6 @@ import dash
 import dash_html_components as html
 import dash_core_components as dcc
 import redis
-import os
 from dash.dependencies import Output, Input, State
 from plotly.data import iris
 
@@ -20,8 +19,11 @@ ts = tsdb['/symbols/fxcm/minutely/USDJPY']
 hist_data = ts.curve(date(2018, 4, 8), date(2018, 4, 11))
 hist_data.sort_index(inplace=True)
 
-host = os.environ.get('REDIS_HOST', '127.0.0.1')
-port = os.environ.get('REDIS_PORT', '6379')
+db = kydb.connect('dynamodb://epython')
+config = db['/demos/epython-dash-demo/config']
+
+host = config.get('REDIS_HOST', '127.0.0.1')
+port = config.get('REDIS_PORT', '6379')
 redis_conn = redis.Redis(host=host, port=port)
 
 UNIT_QTY = [
@@ -98,7 +100,12 @@ def update_trade_size(value):
     State('tick-signal', 'children')
     )
 def compute_value(n, prev_tick):
-    tick = int(redis_conn.get('tick'))
+    tick = redis_conn.get('tick')
+    
+    if tick is None:
+        raise PreventUpdate
+        
+    tick = int(tick)
     if prev_tick == tick:
         raise PreventUpdate
 
