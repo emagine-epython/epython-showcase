@@ -7,6 +7,7 @@ from dash.dependencies import Output, Input, State
 from plotly.data import iris
 
 import kydb
+import pickle
 from datetime import date
 import pandas as pd
 import plotly.express as px
@@ -31,31 +32,6 @@ UNIT_QTY = [
     ('k', 1e3),
     ('', 0),
 ]
-
-
-FAKE_TRADES = [
-    (1*60, 'John', 'USDJPY', 1.5 * 1e6),
-    (3*60, 'Peter', 'USDJPY', 0.5 * 1e6),
-    (5*60, 'Kanako', 'USDJPY', -1. * 1e6),
-    (7*60, 'John', 'USDJPY', 0.1 * 1e6),
-    (10*60, 'Peter', 'USDJPY', 1.5 * 1e6),
-    (12*60, 'John', 'USDJPY', -1. * 1e6),
-    (15*60, 'John', 'USDJPY', 0.3 * 1e6),
-    (17*60, 'Kanako', 'USDJPY', 0.1 * 1e6),
-    (21*60, 'John', 'USDJPY', 1.5 * 1e6),
-    (25*60, 'Peter', 'USDJPY', 0.5 * 1e6),
-    (29*60, 'John', 'USDJPY', -1. * 1e6),
-]
-
-def get_row(index, book, asset, qty):
-    hist_row = hist_data.iloc[index]
-    return (hist_row.name, book, asset, qty, abs(qty), hist_row.closeprice,
-        'BUY' if qty > 0 else 'SELL')
-
-
-trade_data = [get_row(*x) for x in FAKE_TRADES]
-columns = ['dt', 'book', 'asset', 'qty', 'trade_size', 'price', 'trade_type']
-trade_df = pd.DataFrame(trade_data, columns=columns)
 
 layout = html.Div([
     dcc.Slider(
@@ -83,7 +59,8 @@ layout = html.Div([
         n_intervals=0
     ),
     # hidden signal value
-    html.Div(id='tick-signal', style={'display': 'none'})
+    html.Div(id='tick-signal', style={'display': 'none'}),
+    html.Div(id='trade-signal', style={'display': 'none'})
 ])
 
 @app.callback(
@@ -110,17 +87,51 @@ def compute_value(n, prev_tick):
         raise PreventUpdate
 
     return tick
+    
+
+trades_df = None
+
+@app.callback(
+    Output('trade-signal', 'children'),
+    Input('interval-component', 'n_intervals'),
+    )
+def check_new_trades(n):
+    global trades_df
+    prev_len = 0 if trades_df is None else trades_df.shape[0]
+    
+    if prev_len == int(redis_conn.llen('trades')):
+        raise PreventUpdate
+        
+    trades = [pickle.loads(x) for x in redis_conn.lrange('trades', 0, -1)]
+    
+    if not trades:
+        raise PreventUpdate
+    
+    def get_row(dt, book, asset, qty):
+        hist_row = hist_data.loc[dt]
+        return (hist_row.name, book, asset, qty, abs(qty), hist_row.closeprice,
+            'BUY' if qty > 0 else 'SELL')
+    
+    trade_data = [get_row(*x) for x in trades]
+    columns = ['dt', 'book', 'asset', 'qty', 'trade_size', 'price', 'trade_type']
+    trades_df = pd.DataFrame(trade_data, columns=columns)
+        
+    return n
 
 
-@app.callback(Output('price-pos-plot', 'figure'),
-              Input('tick-signal', 'children'))
-def update_price_pos(n):
-    period = 60 * 2 
-    price_df = hist_data[:n+period]
+@app.callback(
+    Output('price-pos-plot', 'figure'),
+    Input('tick-signal', 'children'),
+    State('trade-signal', 'children'))
+def update_price_pos(n, trade):
+    if trades_df is None:
+        raise PreventUpdate
+
+    price_df = hist_data[:n]
     
     price_fig = px.line(hist_data, y='closeprice')
-    scatter_df = trade_df[(trade_df.dt >= price_df.iloc[0].name) &
-        (trade_df.dt <= price_df.iloc[-1].name)]
+    scatter_df = trades_df[(trades_df.dt >= price_df.iloc[0].name) &
+        (trades_df.dt <= price_df.iloc[-1].name)]
         
     if scatter_df.empty:
         return
@@ -137,20 +148,32 @@ def update_price_pos(n):
         Input('buy-button', 'n_clicks'),
         Input('sell-button', 'n_clicks')
     ],
-    State('trade-size', 'value')
+    [
+        State('book', 'value'),
+        State('trade-size', 'value'),
+        State('tick-signal', 'children')
+    ]
     )
-def apply_trade(buy_clicks, sell_clicks, qty):
+def apply_trade(buy_clicks, sell_clicks, book, qty, n):
     if not qty:
         return
     
+    if not book:
+        return 'Book not defined. Do nothing'
+    
     changed_id = [p['prop_id'] for p in dash.callback_context.triggered][0]
-    if 'buy' in  changed_id:
-        verb = 'Bought'
-    else:
-        verb = 'Sold'
     
     f_qty = next(float(qty[:-1]) * q if u else float(qty) for u, q in UNIT_QTY if qty.endswith(u))
     if not f_qty:
         return '0 quantity. Do nothing'
         
+    if 'buy' in  changed_id:
+        verb = 'Bought'
+    else:
+        verb = 'Sold'
+        f_qty *= -1
+    
+    dt = hist_data.index[n]
+    trade = (dt, book, 'USDJPY', f_qty)
+    redis_conn.lpush('trades', pickle.dumps(trade))
     return f'{verb} {qty}'
