@@ -112,6 +112,7 @@ def update_resolution(exchange, resolution):
     [
         Output('curve-plot', 'figure'),
         Output('measures', 'options'),
+        Output('measures', 'value'),
         Output("ts-path", "value"),
         Output("loading-output-1", "children")
     ],
@@ -132,8 +133,8 @@ def update_date_range(exchange, resolution, symbol, start_date, end_date):
     hist_data = ts.curve(start_date, end_date
                          ).sort_index()
 
-    measures = hist_data.columns
-    measure_options = [{'label': x, 'value': x} for x in hist_data.columns]
+    measure_names = list(hist_data.columns)
+    measure_options = [{'label': x, 'value': x} for x in measure_names]
 
     hist_data = pd.melt(hist_data.reset_index(),
                         id_vars=['dt'],
@@ -141,4 +142,4 @@ def update_date_range(exchange, resolution, symbol, start_date, end_date):
 
     fig = px.line(hist_data, x='dt', y='value', color='variable')
 
-    return (fig, measure_options, path, None)
+    return (fig, measure_options, measure_names, path, None)
