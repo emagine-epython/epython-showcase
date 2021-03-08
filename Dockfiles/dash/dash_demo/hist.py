@@ -12,9 +12,10 @@ import plotly.express as px
 from .server import app
 
 DEFAULT_DATES = {
-    'bitflyer': (date(2020, 6, 1), date(2020, 6, 4)),
-    'fxcm': (date(2018, 6, 4), date(2018, 6, 6)),
-    'ml': (date(2018, 6, 4), date(2018, 6, 6)),
+    ('bitflyer', 'daily'): (date(2020, 5, 1), date(2020, 6, 4)),
+    ('bitflyer', 'minutely'): (date(2020, 6, 1), date(2020, 6, 4)),
+    ('fxcm', 'minutely'): (date(2018, 6, 4), date(2018, 6, 6)),
+    ('ml', 'minutely'): (date(2018, 6, 4), date(2018, 6, 6)),
 }
 
 tsdb = kydb.connect('dynamodb://epython/timeseries')
@@ -78,21 +79,20 @@ layout = html.Div([
     [
         Output('resolution-dropdown', 'options'),
         Output('resolution-dropdown', 'value'),
-        Output('date-range', 'start_date'),
-        Output('date-range', 'end_date'),
     ],
     Input('exchange-dropdown', 'value'))
 def update_exchange(exchange):
-    start_date, end_date = DEFAULT_DATES[exchange]
     resolutions = [x[:-1] for x in tsdb.ls('/symbols/' + exchange)]
     return ([{'label': x, 'value': x} for x in resolutions],
-            resolutions[0], start_date, end_date)
+            resolutions[0])
 
 
 @app.callback(
     [
         Output('ts-symbol', 'options'),
         Output('ts-symbol', 'value'),
+        Output('date-range', 'start_date'),
+        Output('date-range', 'end_date'),
     ],
     [
         Input('exchange-dropdown', 'value'),
@@ -102,8 +102,10 @@ def update_resolution(exchange, resolution):
     if not (exchange and resolution):
         return []
 
+    start_date, end_date = DEFAULT_DATES[(exchange, resolution)]
     symbols = tsdb.ls(f'/symbols/{exchange}/{resolution}')
-    return [{'label': x, 'value': x} for x in symbols], symbols[0]
+    return ([{'label': x, 'value': x} for x in symbols], symbols[0],
+        start_date, end_date)
 
 
 @app.callback(
