@@ -14,6 +14,7 @@ from .server import app
 from dash.exceptions import PreventUpdate
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
+import numpy as np
 
 
 tsdb = kydb.connect('dynamodb://epython/timeseries')
@@ -139,34 +140,42 @@ def update_price_pos(n, trade):
     if scatter_df.empty:
         return
     
-    fig = make_subplots(specs=[[{"secondary_y": True}]])
+    fig = make_subplots(rows=2, cols=1, shared_xaxes=True,
+        specs=[[{"secondary_y": True}], [{}]])
+        
+    # Price
+    fig.add_trace(
+        go.Scatter(x=price_df.index, y=price_df.closeprice, name="Price",
+            line={
+                'color': 'grey'
+            }),
+        secondary_y=False,
+    )
+    
     largest_trade = scatter_df.qty.abs().max()
 
-    # Add traces
+    # Trades
     for trade_type, direction in [('Buy', 1), ('Sell', -1)]: 
         trade_plot = scatter_df[scatter_df.qty * direction > 0]
+        is_buy = trade_type == 'Buy'
         fig.add_trace(
             go.Scatter(x=trade_plot.dt, y=trade_plot.price, name=trade_type,
                 mode='markers',
                 marker=dict(
-                    color='Green' if trade_type == 'Buy' else 'Red',
+                    color='Green' if is_buy else 'Red',
                     line=dict(
                         color='Black',
                         width=2
                     )
                 ),
-                marker_size=trade_plot.qty.abs() / largest_trade * 50
+                marker_size=np.log(trade_plot.qty.abs() / largest_trade + 1) * 25,
+                marker_symbol=['triangle-' + ('up' if is_buy else 'down')] * scatter_df.shape[0]
             ),
             secondary_y=False,
         )
     
-    fig.add_trace(
-        go.Scatter(x=price_df.index, y=price_df.closeprice, name="Price",
-            opacity=0.5),
-        secondary_y=False,
-    )
     
-    
+    # Position
     pos_df = scatter_df[['dt', 'qty']]
     pos_df = pd.concat([
         pd.DataFrame([(price_df.index[0], 0)], columns=pos_df.columns),
@@ -175,11 +184,31 @@ def update_price_pos(n, trade):
         ])
     pos_df['position'] = pos_df.qty.cumsum()
     
+    # PNL
     fig.add_trace(
         go.Scatter(x=pos_df.dt, y=pos_df.position, name="Position",
-            line={"shape": 'hv'}),
+            line={ "shape": 'hv'},
+            mode='lines'),
         secondary_y=True,
     )
+    
+    pnl_df = pos_df.set_index('dt')
+    pnl_df = price_df.join(pnl_df).fillna(0.).copy()
+    pnl_df['position'] = pnl_df.qty.cumsum()
+    pnl_df['prev_pos'] = pnl_df.position.shift()
+    pnl_df['prev_price'] = pnl_df.closeprice.shift()
+    i0 = pnl_df.index[0]
+    i1 = pnl_df.index[1]
+    pnl_df.loc[i0, 'prev_pos'] = 0.
+    pnl_df.loc[i0, 'prev_price'] = pnl_df.loc[i1, 'closeprice']
+    pnl_df['pnl'] = pnl_df.prev_pos * (pnl_df.closeprice - pnl_df.prev_price)
+    
+    
+    fig.add_trace(
+        go.Scatter(x=pnl_df.index, y=pnl_df.pnl.cumsum(), name="PNL"),
+        row=2, col=1
+    )
+    
     
     # Add figure title
     fig.update_layout(
