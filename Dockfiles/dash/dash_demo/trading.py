@@ -102,12 +102,14 @@ def check_new_trades(n):
     global trades_df
     prev_len = 0 if trades_df is None else trades_df.shape[0]
 
-    if prev_len == int(redis_conn.llen('trades')):
+    num_trades = int(redis_conn.llen('trades'))
+    if num_trades and prev_len == num_trades:
         raise PreventUpdate
 
     trades = [pickle.loads(x) for x in redis_conn.lrange('trades', 0, -1)]
 
     if not trades:
+        trades_df = None
         raise PreventUpdate
 
     def get_row(dt, book, asset, qty):
@@ -131,7 +133,6 @@ def update_price_pos(n, trade):
 
     price_df = hist_data[:n]
 
-    #price_fig = px.line(hist_data, y='closeprice')
     scatter_df = trades_df[(trades_df.dt >= price_df.iloc[0].name) &
                            (trades_df.dt <= price_df.iloc[-1].name)]
 
