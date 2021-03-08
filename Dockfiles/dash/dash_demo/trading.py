@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import dash
+import dash_table
 import dash_html_components as html
 import dash_core_components as dcc
 import redis
@@ -35,6 +36,8 @@ UNIT_QTY = [
     ('', 0),
 ]
 
+trades_df = None
+
 layout = html.Div([
     dcc.Slider(
         id='trade-size-slider',
@@ -54,7 +57,9 @@ layout = html.Div([
     ]),
     html.Div(id='trade-msg'),
     html.Div([
-        dcc.Graph(id='price-pos-plot')]),
+        dcc.Graph(id='price-pos-plot'),
+        dash_table.DataTable(id='trade-table')
+    ], className='flex-row'),
     dcc.Interval(
         id='interval-component',
         interval=1000,  # in milliseconds
@@ -92,9 +97,6 @@ def compute_value(n, prev_tick):
     return tick
 
 
-trades_df = None
-
-
 @app.callback(
     Output('trade-signal', 'children'),
     Input('interval-component', 'n_intervals'),
@@ -125,10 +127,25 @@ def check_new_trades(n):
 
 
 @app.callback(
+    [
+        Output('trade-table', 'columns'),
+        Output('trade-table', 'data'),
+    ],
+    Input('tick-signal', 'children')
+)
+def update_trade_table(trade):
+    if trades_df is None:
+        raise PreventUpdate
+
+    columns=[{"name": i, "id": i} for i in trades_df.columns]
+    data = trades_df.to_dict('records')
+    return columns, data
+    
+@app.callback(
     Output('price-pos-plot', 'figure'),
-    Input('tick-signal', 'children'),
-    State('trade-signal', 'children'))
-def update_price_pos(n, trade):
+    Input('tick-signal', 'children')
+)
+def update_price_pos(n):
     if trades_df is None:
         raise PreventUpdate
 

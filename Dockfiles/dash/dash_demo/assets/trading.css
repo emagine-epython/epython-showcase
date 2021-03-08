@@ -18,3 +18,8 @@
 #sell-button {
     background-color: red
 }
+
+#price-pos-plot {
+    width: 1000px;
+    height: 600px;
+}
