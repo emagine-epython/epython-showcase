@@ -36,6 +36,8 @@ UNIT_QTY = [
     ('', 0),
 ]
 
+POS_LIMIT = 5e6
+
 trades_df = None
 
 trade_datatable = dash_table.DataTable(
@@ -305,6 +307,7 @@ def apply_trade(buy_clicks, sell_clicks, book, qty, n):
 
     f_qty = next(float(qty[:-1]) * q if u else float(qty)
                  for u, q in UNIT_QTY if qty.endswith(u))
+                 
     if not f_qty:
         return '0 quantity. Do nothing'
 
@@ -313,6 +316,10 @@ def apply_trade(buy_clicks, sell_clicks, book, qty, n):
     else:
         verb = 'Sold'
         f_qty *= -1
+        
+    curr_pos = trades_df[trades_df.book == book].qty.sum()
+    if abs(curr_pos + f_qty) > POS_LIMIT:
+        return f'Trade of {f_qty} and current position of {curr_pos} would breach limit of {POS_LIMIT}'
 
     dt = hist_data.index[n]
     trade = (dt, book, 'USDJPY', f_qty)
