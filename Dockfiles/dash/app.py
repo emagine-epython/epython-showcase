@@ -11,12 +11,12 @@ app.layout = html.Div(
     dcc.Tabs([
         dcc.Tab(label='Trading', children=dash_demo.trading.layout),
         dcc.Tab(label='Historical', children=dash_demo.hist.layout)
-        ])
-    )
+    ])
+)
 
 # This is used when not running inside gunicorn
 if __name__ == "__main__":
     app.run_server(
         debug=True,
         port=8080
-        )
+    )
