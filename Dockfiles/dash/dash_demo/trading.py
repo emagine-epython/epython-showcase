@@ -38,6 +38,36 @@ UNIT_QTY = [
 
 trades_df = None
 
+trade_datatable = dash_table.DataTable(
+    id='trade-table',
+    columns=[
+        {"name": 'Date/Time', "id": 'dt'},
+        {"name": 'Book', "id": 'book'},
+        {"name": 'Asset', "id": 'asset'},
+        {"name": 'Quantity', "id": 'qty'},
+        {"name": 'Price', "id": 'price'}
+    ],
+    filter_action="native",
+    sort_action="native",
+    sort_mode="multi", 
+    style_cell_conditional=[
+        {
+            'if': {'column_id': c},
+            'textAlign': 'left'
+        } for c in ['Date', 'Region']
+    ],
+    style_data_conditional=[
+        {
+            'if': {'row_index': 'odd'},
+            'backgroundColor': 'rgb(248, 248, 248)'
+        }
+    ],
+    style_header={
+        'backgroundColor': 'rgb(230, 230, 230)',
+        'fontWeight': 'bold'
+    }
+    )
+
 layout = html.Div([
     dcc.Slider(
         id='trade-size-slider',
@@ -58,7 +88,7 @@ layout = html.Div([
     html.Div(id='trade-msg'),
     html.Div([
         dcc.Graph(id='price-pos-plot'),
-        dash_table.DataTable(id='trade-table')
+        trade_datatable,
     ], className='flex-row'),
     dcc.Interval(
         id='interval-component',
@@ -71,12 +101,19 @@ layout = html.Div([
 ])
 
 
+def _format_qty(value):
+    try:
+        sign, v = ('', value) if value > 0 else ('-', -value)
+        unit, qty = next((u, v / (q or 1)) for u, q in UNIT_QTY if v >= q)
+        return f'{sign}{qty}{unit}'
+    except StopIteration:
+        return value
+
 @app.callback(
     Output('trade-size', 'value'),
     Input('trade-size-slider', 'value'))
 def update_trade_size(value):
-    unit, qty = next((u, value / (q or 1)) for u, q in UNIT_QTY if value >= q)
-    return f'{qty}{unit}'
+    return _format_qty(value)
 
 
 @app.callback(
@@ -127,19 +164,23 @@ def check_new_trades(n):
 
 
 @app.callback(
-    [
-        Output('trade-table', 'columns'),
-        Output('trade-table', 'data'),
-    ],
+    Output('trade-table', 'data'),
     Input('tick-signal', 'children')
 )
-def update_trade_table(trade):
+def update_trade_table(n):
     if trades_df is None:
         raise PreventUpdate
+        
+    now = hist_data.index[n]
 
-    columns=[{"name": i, "id": i} for i in trades_df.columns]
-    data = trades_df.to_dict('records')
-    return columns, data
+    data = sorted(trades_df.to_dict('records'), key=lambda x: x['dt'], reverse=True)
+    for row in data:
+        dt = row['dt']
+        minutes = int((now - dt).seconds / 60.)
+        ago = f'{minutes}min ago' if minutes < 60 else f'{int(minutes / 60.)}hr{minutes % 60}min ago'
+        row['dt'] = '{} ({})'.format(dt.strftime('%d%b%y %H:%M:%S'), ago)
+        row['qty'] = _format_qty(row['qty'])
+    return data
     
 @app.callback(
     Output('price-pos-plot', 'figure'),
