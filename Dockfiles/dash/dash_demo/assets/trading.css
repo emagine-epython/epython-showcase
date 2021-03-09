@@ -27,3 +27,17 @@
 #trade-table {
     width: 600px;
 }
+
+.label {
+    padding-top: 10px;
+    margin: 0px 10px 0 10px;
+}
+
+#book-selection {
+    width: 150px
+}
+
+#trade-size-slider {
+    width: 200px;
+    margin-top: 10px;
+}

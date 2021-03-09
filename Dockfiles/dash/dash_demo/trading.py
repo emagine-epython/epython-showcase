@@ -49,9 +49,6 @@ trade_datatable = dash_table.DataTable(
         {"name": 'Quantity', "id": 'qty'},
         {"name": 'Price', "id": 'price'}
     ],
-    filter_action="native",
-    sort_action="native",
-    sort_mode="multi", 
     style_cell_conditional=[
         {
             'if': {'column_id': c},
@@ -71,22 +68,30 @@ trade_datatable = dash_table.DataTable(
     )
 
 layout = html.Div([
-    dcc.Slider(
-        id='trade-size-slider',
-        min=100e3,
-        max=2e6,
-        step=100e3,
-        value=100e3,
-    ),
     html.Div([
-        dcc.Input(id='book', value='Book1'),
+        html.Div('Quantity', className='label'),
         dcc.Input(id='trade-size',
                   style={'font-size': '16pt', 'width': '75px'}),
+        dcc.Slider(
+            id='trade-size-slider',
+            min=100e3,
+            max=2e6,
+            step=100e3,
+            value=100e3,
+        ),
+    ], className='flex-row', style={'margin': '5px'}),
+    html.Div([
+        html.Div('Book Trade', className='label'),
+        dcc.Input(id='book', value='Book1'),
         html.Button('Buy', id='buy-button', n_clicks=0,
                     className='buy-sell-button'),
         html.Button('Sell', id='sell-button', n_clicks=0,
                     className='buy-sell-button'),
-    ]),
+        html.Div('View', className='label'),
+        dcc.Dropdown(
+            id='book-selection'
+        ),
+    ], className='flex-row'),
     html.Div(id='trade-msg'),
     html.Div([
         dcc.Graph(id='price-pos-plot'),
@@ -123,7 +128,7 @@ def update_trade_size(value):
     Input('interval-component', 'n_intervals'),
     State('tick-signal', 'children')
 )
-def compute_value(n, prev_tick):
+def update_ticket_signal(n, prev_tick):
     tick = redis_conn.get('tick')
 
     if tick is None:
@@ -134,7 +139,24 @@ def compute_value(n, prev_tick):
         raise PreventUpdate
 
     return tick
+    
 
+@app.callback(
+    [
+        Output('book-selection', 'options'),
+        Output('book-selection', 'value'),
+    ],
+    Input('tick-signal', 'children'),
+    State('book-selection', 'value')
+)
+def update_book_selection(n, selected):
+    if trades_df is None:
+        return [{'label': 'ALL', 'value': 'ALL'}], 'ALL'
+
+    books = ['ALL'] + list(trades_df.book.unique())
+    if selected not in books:
+        selected = 'ALL'
+    return [{'label': x, 'value': x} for x in books], selected
 
 @app.callback(
     Output('trade-signal', 'children'),
@@ -167,15 +189,19 @@ def check_new_trades(n):
 
 @app.callback(
     Output('trade-table', 'data'),
-    Input('tick-signal', 'children')
+    [
+        Input('tick-signal', 'children'),
+        Input('book-selection', 'value'),
+    ]
 )
-def update_trade_table(n):
-    if trades_df is None:
+def update_trade_table(n, book):
+    if trades_df is None or book is None:
         raise PreventUpdate
         
     now = hist_data.index[n]
 
-    data = sorted(trades_df.to_dict('records'), key=lambda x: x['dt'], reverse=True)
+    df = trades_df if book == 'ALL' else trades_df[trades_df.book == book]
+    data = sorted(df.to_dict('records'), key=lambda x: x['dt'], reverse=True)
     for row in data:
         dt = row['dt']
         minutes = int((now - dt).seconds / 60.)
@@ -186,10 +212,13 @@ def update_trade_table(n):
     
 @app.callback(
     Output('price-pos-plot', 'figure'),
-    Input('tick-signal', 'children')
+    [
+        Input('tick-signal', 'children'),
+        Input('book-selection', 'value')
+    ]
 )
-def update_price_pos(n):
-    if trades_df is None:
+def update_price_pos(n, book):
+    if trades_df is None or book is None:
         raise PreventUpdate
 
     price_df = hist_data[:n]
@@ -197,6 +226,9 @@ def update_price_pos(n):
     scatter_df = trades_df[(trades_df.dt >= price_df.iloc[0].name) &
                            (trades_df.dt <= price_df.iloc[-1].name)]
 
+    if book != 'ALL':
+        scatter_df = scatter_df[scatter_df.book == book]
+    
     if scatter_df.empty:
         return
     
@@ -261,18 +293,21 @@ def update_price_pos(n):
     i1 = pnl_df.index[1]
     pnl_df.loc[i0, 'prev_pos'] = 0.
     pnl_df.loc[i0, 'prev_price'] = pnl_df.loc[i1, 'closeprice']
-    pnl_df['pnl'] = pnl_df.prev_pos * (pnl_df.closeprice - pnl_df.prev_price)
+    pnl_df['pnl'] = (pnl_df.prev_pos * (pnl_df.closeprice - pnl_df.prev_price)).cumsum()
     
     
     fig.add_trace(
-        go.Scatter(x=pnl_df.index, y=pnl_df.pnl.cumsum(), name="PNL"),
+        go.Scatter(x=pnl_df.index, y=pnl_df.pnl, name="PNL"),
         row=2, col=1
     )
     
     
     # Add figure title
     fig.update_layout(
-        title_text="Price Trade Position"
+        title_text='Position: {}, PNL: {}'.format(
+            _format_qty(round(pos_df.iloc[-1].position)),
+            _format_qty(round(pnl_df.iloc[-1].pnl))
+        )
     )
     
     # Set x-axis title
@@ -302,6 +337,9 @@ def apply_trade(buy_clicks, sell_clicks, book, qty, n):
 
     if not book:
         return 'Book not defined. Do nothing'
+        
+    if book == 'ALL':
+        return 'Book name "ALL" is invalid'
 
     changed_id = [p['prop_id'] for p in dash.callback_context.triggered][0]
 
@@ -317,9 +355,10 @@ def apply_trade(buy_clicks, sell_clicks, book, qty, n):
         verb = 'Sold'
         f_qty *= -1
         
-    curr_pos = trades_df[trades_df.book == book].qty.sum()
-    if abs(curr_pos + f_qty) > POS_LIMIT:
-        return f'Trade of {f_qty} and current position of {curr_pos} would breach limit of {POS_LIMIT}'
+    if trades_df is not None:
+        curr_pos = trades_df[trades_df.book == book].qty.sum()
+        if abs(curr_pos + f_qty) > POS_LIMIT:
+            return f'Trade of {f_qty} and current position of {curr_pos} would breach limit of {POS_LIMIT}'
 
     dt = hist_data.index[n]
     trade = (dt, book, 'USDJPY', f_qty)
