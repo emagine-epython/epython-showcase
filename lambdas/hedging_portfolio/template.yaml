@@ -1,0 +1,14 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: 'AWS::Serverless-2016-10-31'
+Description: An AWS Serverless Specification template describing your function.
+Resources:
+  hedgingportfolio:
+    Type: 'AWS::Serverless::Function'
+    Properties:
+      FunctionName: hedging_portfolio
+      Description: ''
+      Handler: lambda_function.lambda_handler
+      MemorySize: 128
+      Role: 'arn:aws:iam::499030764380:role/MarketDataSnapper'
+      Runtime: python3.8
+      Timeout: 600 

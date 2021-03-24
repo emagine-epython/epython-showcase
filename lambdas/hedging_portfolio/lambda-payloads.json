@@ -1,0 +1,18 @@
+{
+    "hedgingportfolio": {
+        "lambda": {
+            "bs_kwargs": {
+                "S0": 100,
+                "K": 100,
+                "sigma": 0.1,
+                "r": 0,
+                "T": 1,
+                "mu": 0,
+                "n_steps": 1000
+            },
+            "sim_kwargs": {
+                "n_sims": 1000
+            }
+        }
+    }
+}
